@@ -19,6 +19,3 @@ jobs:
 
       - name: Install dependencies
         run: npm install  # Install the dependencies defined in package.json
-
-      - name: Run the application
-        run: npm start  # Run the application using npm start
