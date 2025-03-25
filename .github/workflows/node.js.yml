@@ -19,3 +19,6 @@ jobs:
 
       - name: Install dependencies
         run: npm install  # Install the dependencies defined in package.json
+
+      - name: Restart server
+        run: pm2 restart server.js --name=BackendAPI

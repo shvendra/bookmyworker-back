@@ -33,6 +33,15 @@ app.use(
 app.use("/api/v1/user", userRouter);
 app.use("/api/v1/job", jobRouter);
 app.use("/api/v1/application", applicationRouter);
+// Health Check Route
+app.get("/api/v1/health", (req, res) => {
+  res.status(200).json({
+    status: "success",
+    message: "API is healthy",
+    timestamp: new Date(),
+  });
+});
+
 dbConnection();
 
 app.use(errorMiddleware);
