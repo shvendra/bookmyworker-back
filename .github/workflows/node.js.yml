@@ -11,5 +11,14 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-      - name: Run a one-line script
-        run: echo "Hello, world!"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '22.x'  # Specify the Node.js version you want to use
+
+      - name: Install dependencies
+        run: npm install  # Install the dependencies defined in package.json
+
+      - name: Run the application
+        run: npm start  # Run the application using npm start
