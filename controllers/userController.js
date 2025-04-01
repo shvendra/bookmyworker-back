@@ -5,7 +5,6 @@ import { sendToken } from "../utils/jwtToken.js";
 
 export const register = catchAsyncErrors(async (req, res, next) => {
   const { pinCode, address, name, email, phone, password, addresses, employerType, role, state, city } = req.body;
-  console.log(req.body);
   // Ensure that required fields (name, phone, password, and role) are present
   if (!name || !phone || !password || !role) {
     return next(new ErrorHandler("Please fill full form !"));
@@ -37,10 +36,13 @@ export const register = catchAsyncErrors(async (req, res, next) => {
   }
 
   // Create the user with the provided data
-  const user = await User.create(userData);
-
-  // Send a token (or response) with a success message
-  sendToken(user, 201, res, "User Registered Successfully !");
+  try {
+    const user = await User.create(userData);
+    sendToken(user, 201, res, "User Registered Successfully !");
+  } catch (error) {
+    console.error("Error creating user:", error);
+    return next(new ErrorHandler("Failed to register user. Please try again."));
+  }  
 });
 
 

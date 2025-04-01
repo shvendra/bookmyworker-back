@@ -10,84 +10,84 @@ export const getAllJobs = catchAsyncErrors(async (req, res, next) => {
   });
 });
 
+
 export const postJob = catchAsyncErrors(async (req, res, next) => {
-  // if (req.body?.role === "Worker") {
-  //   return next(
-  //     new ErrorHandler("worker is not allowed to access this resource.", 400)
-  //   );
-  // }
+  try {
+    const {
+      name,
+      areasOfWork,
+      workExperience,
+      fixedSalary,
+      salaryFrom,
+      salaryTo,
+      description,
+      dob,
+      phone,
+      aadhar,
+      ifscCode,
+      bankAccount,
+      pinCode,
+      address,
+      role,
+      password
+    } = req.body;
 
-  // Get the data sent from the frontend
-  const {
-    name,
-    areasOfWork,
-    workExperience,
-    fixedSalary,
-    salaryFrom,
-    salaryTo,
-    description,
-    dob,
-    phone,
-    aadhar,
-    ifscCode,
-    bankAccount,
-    pinCode,
-    address,
-    role,
-    password
-  } = req.body;
-  console.log('reached');
+    console.log(req.body); // To inspect the body data
 
-  // Validation
-  if (!name || !areasOfWork || !description) {
-    return next(new ErrorHandler("Please provide complete worker details.", 400));
+    // Validation
+    if (!name || !areasOfWork || !description) {
+      return next(new ErrorHandler("Please provide complete worker details.", 400));
+    }
+
+    if ((!salaryFrom || !salaryTo) && !fixedSalary) {
+      return next(new ErrorHandler("Please either provide fixed wages or ranged wages.", 400));
+    }
+
+    if (salaryFrom && salaryTo && fixedSalary) {
+      return next(new ErrorHandler("Cannot Enter Fixed and Ranged wages together.", 400));
+    }
+
+    // Check if an image was uploaded, if so, save it
+    let profileImage = "";
+    if (req.file) {
+      profileImage = req.file.path; // Get the path of the uploaded image
+    }
+
+    // Create the job post object based on the frontend data
+    const job = await User.create({
+      name,
+      areasOfWork,
+      workExperience,
+      fixedSalary,
+      salaryFrom,
+      salaryTo,
+      description,
+      dob,
+      phone,
+      aadhar,
+      ifscCode,
+      bankAccount,
+      pinCode,
+      address,
+      postedBy: req.user._id,
+      role,
+      password,
+      profile: profileImage, // Save the image path in the database
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Worker added Successfully!",
+      job,
+    });
+  } catch (error) {
+    // Log the error for debugging
+    console.error("Error in postJob:", error);
+    return next(error); // Pass the error to the global error handler
   }
-
-  if ((!salaryFrom || !salaryTo) && !fixedSalary) {
-    return next(
-      new ErrorHandler(
-        "Please either provide fixed waages or ranged wages.",
-        400
-      )
-    );
-  }
-
-  if (salaryFrom && salaryTo && fixedSalary) {
-    return next(
-      new ErrorHandler("Cannot Enter Fixed and Ranged wages together.", 400)
-    );
-  }
-
-  // Collect additional fields as necessary
-  const postedBy = req.user._id;
-
-  // Create the job post object based on the frontend data
-  const job = await User.create({
-    name,
-    areasOfWork,
-    workExperience,
-    fixedSalary,
-    salaryFrom,
-    salaryTo,
-    description,
-    dob, // If necessary, you can store dob as well
-    phone, // Mobile number of the worker
-    aadhar, // Aadhar number
-    ifscCode, // IFSC code
-    bankAccount, // Bank account number
-    pinCode, // Pin code of the address
-    address, // Address of the worker
-    postedBy,
-    role,
-    password
-  });
-console.log(job)
-  res.status(200).json({
-    success: true,
-    message: "Worker added Successfully!",
-    job,
-  });
 });
+
+
 
 
 export const getMyJobs = catchAsyncErrors(async (req, res, next) => {

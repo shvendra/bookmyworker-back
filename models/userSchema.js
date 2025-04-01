@@ -12,7 +12,13 @@ const userSchema = new mongoose.Schema({
   },
   email: {
     type: String,
-    validate: [validator.isEmail, "Please provide a valid Email!"],
+    validate: {
+      validator: function (value) {
+        // Only validate if email is provided
+        return !value || validator.isEmail(value);
+      },
+      message: "Please provide a valid Email!",
+    },
   },
   password: {
     type: String,
@@ -24,7 +30,7 @@ const userSchema = new mongoose.Schema({
   role: {
     type: String,
     required: [true, "Please select a role"],
-    enum: ["Agent", "Worker", "Employer"],
+    enum: ["Agent", "Worker", "Employer", "Admin"],
   },
   address: {
     type: String,
@@ -62,6 +68,7 @@ const userSchema = new mongoose.Schema({
   aadhar: {
     type: String,
     unique: true,
+    sparse: true, // This allows multiple 'null' values for aadhar
   },
   ifscCode: {
     type: String,
@@ -71,7 +78,6 @@ const userSchema = new mongoose.Schema({
   },
   pinCode: {
     type: String,
-    required: [true, "Please provide the worker's area pin code."],
   },
   postedBy: {
     type: String,
@@ -80,6 +86,9 @@ const userSchema = new mongoose.Schema({
     type: String,
   },
   city: {
+    type: String,
+  },
+  profile: {
     type: String,
   }
 });

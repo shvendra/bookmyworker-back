@@ -8,9 +8,8 @@ import {
   updateJob,
 } from "../controllers/jobController.js";
 import { isAuthenticated } from "../middlewares/auth.js";
-
+import { upload } from "../controllers/uploadImage.js";
 const router = express.Router();
-
 router.get("/getall", getAllJobs);
 router.post("/post", isAuthenticated, postJob);
 router.get("/getmyjobs", isAuthenticated, getMyJobs);
