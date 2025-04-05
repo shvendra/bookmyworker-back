@@ -1,23 +1,37 @@
 import http from "http";
-import { Server as SocketIOServer } from "socket.io";
 import express from "express";
+import { Server as SocketIOServer } from "socket.io";
+import { config } from "dotenv";
+import cors from "cors";
+import cookieParser from "cookie-parser";
+import fileUpload from "express-fileupload";
+import mongoose from "mongoose";
+import path from "path";
+import { fileURLToPath } from "url";
+
+// Routes
 import dbConnection from "./database/dbConnection.js";
 import jobRouter from "./routes/jobRoutes.js";
 import userRouter from "./routes/userRoutes.js";
 import applicationRouter from "./routes/applicationRoutes.js";
-import { config } from "dotenv";
 import chatRouter from "./routes/chatRoutes.js";
-import cors from "cors";
-import { errorMiddleware } from "./middlewares/error.js";
-import cookieParser from "cookie-parser";
-import fileUpload from "express-fileupload";
-import Chat from "./models/chatSchema.js";
-import mongoose from "mongoose";
+import otpRoute from "./routes/otpRoute.js";
 
+// Middlewares
+import { errorMiddleware } from "./middlewares/error.js";
+
+// Models
+import Chat from "./models/chatSchema.js";
+
+// __dirname workaround for ES Modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Initialize App
 const app = express();
 config({ path: "./config/config.env" });
 
-// Create HTTP server and initialize Socket.IO
+// Create HTTP server & Socket.IO server
 const server = http.createServer(app);
 const io = new SocketIOServer(server, {
   cors: {
@@ -27,6 +41,7 @@ const io = new SocketIOServer(server, {
   },
 });
 
+// CORS Middleware
 app.use(
   cors({
     origin: [process.env.FRONTEND_URL],
@@ -35,21 +50,25 @@ app.use(
   })
 );
 
+// Core Middleware
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use(
-  fileUpload({
-    useTempFiles: true,
-    tempFileDir: "/tmp/",
-  })
-);
+// File Upload Middleware
+app.use(fileUpload());
 
+// Static File Serving for KYC and Profile Photos
+app.use("/kyc_doc", express.static(path.join(__dirname, "kyc_doc")));
+app.use("/profile_photo", express.static(path.join(__dirname, "profile_photo")));
+
+// Routes
 app.use("/api/v1/user", userRouter);
 app.use("/api/v1/job", jobRouter);
 app.use("/api/v1/application", applicationRouter);
 app.use("/api/v1/chat", chatRouter);
+app.use("/api/v1/otp", otpRoute);
+
 // Health Check Route
 app.get("/api/v1/health", (req, res) => {
   res.status(200).json({
@@ -59,10 +78,10 @@ app.get("/api/v1/health", (req, res) => {
   });
 });
 
-// MongoDB Connection
+// Connect to MongoDB
 dbConnection();
 
-// Chat Socket.IO
+// WebSocket: Chat logic with Socket.IO
 io.on("connection", (socket) => {
   console.log("A user connected:", socket.id);
 
@@ -73,40 +92,36 @@ io.on("connection", (socket) => {
 
   socket.on("send_message", async (data) => {
     const { room, message, sender } = data;
-    
+
     try {
-        // Validate sender as ObjectId
-        if (!mongoose.Types.ObjectId.isValid(sender)) {
-            console.error("Invalid sender ID:", sender);
-            return;
-        }
+      if (!mongoose.Types.ObjectId.isValid(sender)) {
+        console.error("Invalid sender ID:", sender);
+        return;
+      }
 
-        const senderObjectId = new mongoose.Types.ObjectId(sender);
+      const senderObjectId = new mongoose.Types.ObjectId(sender);
+      let chat = await Chat.findOne({ roomId: room });
 
-        // Find or create chat room
-        let chat = await Chat.findOne({ roomId: room });
+      if (!chat) {
+        chat = new Chat({ roomId: room, messages: [] });
+      }
 
-        if (!chat) {
-            chat = new Chat({ roomId: room, messages: [] });
-        }
+      chat.messages.push({ sender: senderObjectId, message });
+      await chat.save();
 
-        // Push message to chat messages array
-        chat.messages.push({ sender: senderObjectId, message });
-        await chat.save();
-
-        // Emit message to room (after saving to DB)
-        io.to(room).emit("receive_message", { message, sender });
-
+      io.to(room).emit("receive_message", { message, sender });
     } catch (error) {
-        console.error("Error saving message to DB:", error);
+      console.error("Error saving message to DB:", error);
     }
-});
+  });
 
   socket.on("disconnect", () => {
     console.log("A user disconnected:", socket.id);
   });
 });
 
+// Global Error Middleware
 app.use(errorMiddleware);
 
-export default server; // Export the server, not the app
+// Export the server (for use in main.js or app.js)
+export default server;

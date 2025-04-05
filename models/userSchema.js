@@ -53,7 +53,15 @@ const userSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
-
+  aadharFront: {
+    type: String, // Store file path
+  },
+  aadharBack: {
+    type: String, // Store file path
+  },
+  profilePhoto: {
+    type: String, // Store file path
+  },
   areasOfWork: {
     type: [String], // An array of areas where the worker is available to work
   },

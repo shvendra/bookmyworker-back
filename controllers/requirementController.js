@@ -42,11 +42,24 @@ export const insertRequirement = catchAsyncErrors(async (req, res, next) => {
   });
 });
 
-// Get Requirements by Employer ID
-export const getRequirementsByEmployerId = catchAsyncErrors(async (req, res, next) => {
-  const { employerId } = req.params;
+export const getFilteredRequirements = catchAsyncErrors(async (req, res, next) => {
+  const { role, _id } = req.user;
+  const query = {};
 
-  const requirements = await Requirement.find({ employerId });
+  // Role-based filtering
+  if (role === "Employer") {
+    query.employerId = _id;
+  } else if (role === "Agent") {
+    query.assignedAgentId = _id;
+  }
+
+  // Query param filtering
+  if (req.query.ERN_NUMBER) query.ERN_NUMBER = req.query.ERN_NUMBER;
+  if (req.query.state) query.state = req.query.state;
+  if (req.query.status) query.status = req.query.status;
+  if (req.query.workType) query.workType = req.query.workType;
+
+  const requirements = await Requirement.find(query);
 
   res.status(200).json({
     success: true,
@@ -54,12 +67,3 @@ export const getRequirementsByEmployerId = catchAsyncErrors(async (req, res, nex
   });
 });
 
-// Get All Requirements
-export const getAllRequirements = catchAsyncErrors(async (req, res, next) => {
-  const requirements = await Requirement.find();
-
-  res.status(200).json({
-    success: true,
-    requirements,
-  });
-});

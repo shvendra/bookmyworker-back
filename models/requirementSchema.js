@@ -36,7 +36,11 @@ const requirementSchema = new mongoose.Schema({
   employerId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   employerName: { type: String, required: true },
   employerPhone: { type: String, required: true },
-  
+  assignedAgentId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+  status: { type: String, default: "Pending" }, // Default status
+  intrestedAgents: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+  assignedAgentName: { type: String },
+  assignedAgentPhone: { type: String },
   ERN_NUMBER: { type: Number, unique: true }
 }, { timestamps: true });
 
@@ -44,6 +48,11 @@ const requirementSchema = new mongoose.Schema({
 requirementSchema.pre("save", async function (next) {
   if (!this.ERN_NUMBER) {
     this.ERN_NUMBER = await generateUniqueERN();
+  }
+  if (this.workerNeedDate) {
+    const dateOnly = new Date(this.workerNeedDate);
+    dateOnly.setUTCHours(0, 0, 0, 0); // Reset time
+    this.workerNeedDate = dateOnly;
   }
   next();
 });

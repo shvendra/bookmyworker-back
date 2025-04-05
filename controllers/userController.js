@@ -90,3 +90,36 @@ export const getUser = catchAsyncErrors((req, res, next) => {
     user,
   });
 });
+
+export const updateUser = async (req, res) => {
+  try {
+    const { _id } = req.user; // Assuming the user is authenticated and ID is available
+    let updateData = { ...req.body };
+
+    // Handle file uploads
+    if (req.files) {
+      if (req.files.aadharFront) {
+        const aadharFrontPath = `base_dir/kyc_doc/${_id}_aadhar_front.jpg`;
+        await req.files.aadharFront.mv(aadharFrontPath);
+        updateData.aadharFront = aadharFrontPath;
+      }
+
+      if (req.files.aadharBack) {
+        const aadharBackPath = `base_dir/kyc_doc/${_id}_aadhar_back.jpg`;
+        await req.files.aadharBack.mv(aadharBackPath);
+        updateData.aadharBack = aadharBackPath;
+      }
+
+      if (req.files.profilePhoto) {
+        const profilePhotoPath = `base_dir/profile_photo/${_id}_profile.jpg`;
+        await req.files.profilePhoto.mv(profilePhotoPath);
+        updateData.profilePhoto = profilePhotoPath;
+      }
+    }
+
+    const user = await User.findByIdAndUpdate(_id, updateData, { new: true });
+    res.json({ success: true, user });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
