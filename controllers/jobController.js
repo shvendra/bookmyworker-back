@@ -3,12 +3,32 @@ import { User } from "../models/userSchema.js";
 import ErrorHandler from "../middlewares/error.js";
 
 export const getAllJobs = catchAsyncErrors(async (req, res, next) => {
-  const jobs = await User.find({ expired: false });
+  const { role, state, district, page = 1, limit = 10, search = "" } = req.query;
+
+  const query = {
+    ...(role && { role }),
+    ...(state && { state }),
+    ...(district && { district }),
+    $or: [
+      { name: { $regex: search, $options: "i" } },
+      { phone: { $regex: search, $options: "i" } },
+      { city: { $regex: search, $options: "i" } },
+    ],
+  };
+
+  const total = await User.countDocuments(query);
+  const jobs = await User.find(query)
+    .sort({ createdAt: -1 })
+    .skip((page - 1) * limit)
+    .limit(parseInt(limit));
+
   res.status(200).json({
     success: true,
     jobs,
+    total,
   });
 });
+
 
 
 export const postJob = catchAsyncErrors(async (req, res, next) => {

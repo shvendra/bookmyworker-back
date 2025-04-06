@@ -237,7 +237,7 @@ export const updateUser = async (req, res) => {
 // GET AGENTS BASED ON STATE AND CITY
 export const getAgents = async (req, res) => {
   try {
-    const { state, city } = req.body;
+    const { state, district: city } = req.query; // 👈 using query instead of body
 
     const filter = {
       role: "Agent",
@@ -247,7 +247,8 @@ export const getAgents = async (req, res) => {
     if (state) filter.state = state;
     if (city) filter.district = city;
 
-    const agents = await User.find(filter).select("_id name district profilePhoto");
+    const agents = await User.find(filter).select("_id name district phone profilePhoto");
+
     res.status(200).json({
       success: true,
       agents,
@@ -260,3 +261,4 @@ export const getAgents = async (req, res) => {
     });
   }
 };
+

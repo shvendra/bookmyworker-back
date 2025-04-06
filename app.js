@@ -102,19 +102,21 @@ io.on("connection", (socket) => {
     const { room, message, sender } = data;
 
     try {
-      if (!mongoose.Types.ObjectId.isValid(sender)) {
+      let senderObjectId;
+      try {
+        senderObjectId = new mongoose.Types.ObjectId(sender);
+      } catch {
         console.error("Invalid sender ID:", sender);
         return;
       }
 
-      const senderObjectId = new mongoose.Types.ObjectId(sender);
       let chat = await Chat.findOne({ roomId: room });
 
       if (!chat) {
         chat = new Chat({ roomId: room, messages: [] });
       }
 
-      chat.messages.push({ sender: senderObjectId, message });
+      chat.messages.push({ sender: senderObjectId, message, timestamp: new Date() });
       await chat.save();
 
       io.to(room).emit("receive_message", { message, sender });

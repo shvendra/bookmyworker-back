@@ -62,7 +62,7 @@ export const loginAdmin = catchAsyncErrors(async (req, res, next) => {
     if (!user) {
       return next(new ErrorHandler("User not found. Please register.", 404));
     }
-    if(user.role === "Admin") {
-        sendToken(user, 200, res, "Logged in successfully!");
-    }
+    if (user.role === "Admin" || user.role === "SuperAdmin") {
+      sendToken(user, 200, res, "Logged in successfully!");
+  }
   });

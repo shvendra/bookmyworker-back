@@ -66,3 +66,33 @@ export const getFilteredRequirements = catchAsyncErrors(async (req, res, next) =
   });
 });
 
+export const assignAgentToRequirement = catchAsyncErrors(async (req, res, next) => {
+  const { agentId, ern,
+    assignedAgentName,
+    assignedAgentPhone
+  } = req.body;
+
+  if (!agentId || !ern) {
+    return next(new ErrorHandler("Missing agentId or ern", 400));
+  }
+
+  const requirement = await Requirement.findOne({ ERN_NUMBER: ern });
+console.log(requirement);
+  if (!requirement) {
+    return next(new ErrorHandler("Requirement not found with given ERN", 404));
+  }
+
+  requirement.assignedAgentId = agentId;
+  requirement.status = "Assigned";
+  requirement.assignedAgentName = assignedAgentName;
+  requirement.assignedAgentPhone = assignedAgentPhone;
+
+  await requirement.save();
+
+  res.status(200).json({
+    success: true,
+    message: "Agent assigned successfully",
+    requirement,
+  });
+});
+
