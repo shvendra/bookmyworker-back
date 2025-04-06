@@ -21,23 +21,30 @@ export const register = catchAsyncErrors(async (req, res, next) => {
     employerType,
     role,
     state,
-    city,
+    district,
   } = req.body;
-  // Ensure that required fields (name, phone, password, and role) are present
+
+  // Ensure required fields are present
   if (!name || !phone || !password || !role) {
-    return next(new ErrorHandler("Please fill full form !"));
+    return res.status(400).json({
+      success: false,
+      message: "Please fill full form!",
+    });
   }
 
-  // Check if the phone number already exists
+  // Check if phone already exists
   const isPhone = await User.findOne({ phone });
   if (isPhone) {
-    return next(new ErrorHandler("Phone number already registered !"));
+    return res.status(400).json({
+      success: false,
+      message: "Phone number already registered!",
+    });
   }
 
-  // Prepare the user data, including email only if provided
+  // Prepare user data
   const userData = {
-    address,
     pinCode,
+    address,
     name,
     phone,
     password,
@@ -45,50 +52,57 @@ export const register = catchAsyncErrors(async (req, res, next) => {
     addresses,
     employerType,
     state,
-    city,
+    district,
   };
 
-  // If email is provided, add it to the user data
-  if (email) {
+  // Include email only if Employer
+  if (role === "Employer" && email) {
     userData.email = email;
   }
 
-  // Create the user with the provided data
   try {
+    console.log(userData);
     const user = await User.create(userData);
-    sendToken(user, 201, res, "User Registered Successfully !");
+    sendToken(user, 201, res, "User Registered Successfully!");
+    
   } catch (error) {
+    console.log(error);
     console.error("Error creating user:", error);
-    return next(new ErrorHandler("Failed to register user. Please try again."));
+    return res.status(500).json({
+      success: false,
+      message: "Failed to register user. Please try again.",
+    });
   }
 });
 
+
 export const login = catchAsyncErrors(async (req, res, next) => {
   const { phone, password, role } = req.body;
-  console.log(req.body);
   if (!phone || !password || !role) {
-    return next(
-      new ErrorHandler("Please provide phone number,password and role !")
-    );
+    return next(new ErrorHandler("Please provide phone, password, and role."));
   }
+
   const user = await User.findOne({ phone }).select("+password");
+
   if (!user) {
-    return next(new ErrorHandler("Invalid Phone number Or Password.", 400));
+    return next(new ErrorHandler("User not found. Please register.", 404));
   }
-  const isPasswordMatched = await user.comparePassword(password);
+
+  const isPasswordMatched = await bcrypt.compare(password, user.password);
+console.log(isPasswordMatched);
   if (!isPasswordMatched) {
-    return next(new ErrorHandler("Invalid Phone number Or Password !", 400));
+    return next(new ErrorHandler("Incorrect password.", 401));
   }
+
   if (user.role !== role) {
     return next(
-      new ErrorHandler(
-        `User with provided phone number and ${role} not found !`,
-        404
-      )
+      new ErrorHandler(`This user does not have the role '${role}'.`, 403)
     );
   }
-  sendToken(user, 201, res, "User Logged In Sucessfully !");
+
+  sendToken(user, 200, res, "Logged in successfully!");
 });
+
 
 export const logout = catchAsyncErrors(async (req, res, next) => {
   res
@@ -134,31 +148,28 @@ export const updateUser = async (req, res) => {
     // ✅ Password update logic
     if (oldPassword || newPassword || confirmPassword) {
       if (!oldPassword || !newPassword || !confirmPassword) {
-        return res
-          .status(400)
-          .json({
-            success: false,
-            message: "All password fields are required",
-          });
+        return res.status(400).json({
+          success: false,
+          message: "Please fill all password fields to update password.",
+        });
       }
 
-      const isPasswordMatched = await userDoc.comparePassword(oldPassword);
+      const isPasswordMatched = await bcrypt.compare(oldPassword, userDoc.password);
+
       if (!isPasswordMatched) {
-        return res
-          .status(401)
-          .json({ success: false, message: "Old password is incorrect" });
+        return res.status(401).json({
+          success: false,
+          message: "Old password is incorrect.",
+        });
       }
 
       if (newPassword !== confirmPassword) {
-        return res
-          .status(400)
-          .json({
-            success: false,
-            message: "New password and confirm password do not match",
-          });
+        return res.status(400).json({
+          success: false,
+          message: "New password and confirm password must match.",
+        });
       }
-
-      userDoc.password = await bcrypt.hash(newPassword, 10);
+      userDoc.password = newPassword;
     }
 
     // ✅ Prepare update data
@@ -220,5 +231,32 @@ export const updateUser = async (req, res) => {
   } catch (error) {
     console.error("Update Error:", error);
     res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// GET AGENTS BASED ON STATE AND CITY
+export const getAgents = async (req, res) => {
+  try {
+    const { state, city } = req.body;
+
+    const filter = {
+      role: "Agent",
+      status: "Active",
+    };
+
+    if (state) filter.state = state;
+    if (city) filter.district = city;
+
+    const agents = await User.find(filter).select("_id name district profilePhoto");
+    res.status(200).json({
+      success: true,
+      agents,
+    });
+  } catch (error) {
+    console.error("❌ Error fetching agents:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch agents",
+    });
   }
 };

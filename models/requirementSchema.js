@@ -19,8 +19,8 @@ const requirementSchema = new mongoose.Schema({
   workType: { type: String, required: true }, // ✅ Required
   workerQuantityUnskilled: { type: Number, required: true }, // ✅ Required
   workerQuantitySkilled: { type: Number, required: true }, // ✅ Required
-  workLocation: { type: String, required: true }, // ✅ Required
-  workerNeedDate: { type: Date, required: true }, // ✅ Required
+  workLocation: { type: String }, // ✅ Required
+  workerNeedDate: { type: Date }, // ✅ Required
   state: { type: String, required: true }, // ✅ Required
   district: { type: String, required: true }, // ✅ Required
 

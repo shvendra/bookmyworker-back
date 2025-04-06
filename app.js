@@ -8,6 +8,7 @@ import fileUpload from "express-fileupload";
 import mongoose from "mongoose";
 import path from "path";
 import { fileURLToPath } from "url";
+import session from "express-session";
 
 // Routes
 import dbConnection from "./database/dbConnection.js";
@@ -16,6 +17,7 @@ import userRouter from "./routes/userRoutes.js";
 import applicationRouter from "./routes/applicationRoutes.js";
 import chatRouter from "./routes/chatRoutes.js";
 import otpRoute from "./routes/otpRoute.js";
+import adminRouter from "./routes/adminRoute.js";
 
 // Middlewares
 import { errorMiddleware } from "./middlewares/error.js";
@@ -57,12 +59,18 @@ app.use(express.urlencoded({ extended: true }));
 
 // File Upload Middleware
 app.use(fileUpload());
-
+app.use(session({
+  secret: 'your-secret-key',
+  resave: false,
+  saveUninitialized: true,
+  cookie: { secure: false } // Use true only if HTTPS
+}));
 // Static File Serving for KYC and Profile Photos
 app.use("/kyc_doc", express.static(path.join(__dirname, "kyc_doc")));
 app.use("/profile_photo", express.static(path.join(__dirname, "profile_photo")));
 
 // Routes
+app.use("/api/v1/admin", adminRouter);
 app.use("/api/v1/user", userRouter);
 app.use("/api/v1/job", jobRouter);
 app.use("/api/v1/application", applicationRouter);

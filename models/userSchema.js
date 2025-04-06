@@ -14,16 +14,19 @@ const userSchema = new mongoose.Schema({
     type: String,
     validate: {
       validator: function (value) {
-        return !value || validator.isEmail(value);
+        // If role is Employer, email is required and must be valid
+        if (this.role === "Employer") {
+          return validator.isEmail(value || "");
+        }
+        // For other roles, email can be empty or undefined
+        return true;
       },
-      message: "Please provide a valid Email!",
+      message: "Please provide a valid Email for Employers!",
     },
   },
   password: {
     type: String,
-    required: [true, "Please provide a Password!"],
-    minLength: [8, "Password must contain at least 8 characters!"],
-    maxLength: [1000, "Password cannot exceed 32 characters!"],
+    required: true,
     select: false,
   },
   role: {
@@ -96,7 +99,7 @@ const userSchema = new mongoose.Schema({
   state: {
     type: String,
   },
-  city: {
+  district: {
     type: String,
   },
   profile: {
@@ -105,14 +108,12 @@ const userSchema = new mongoose.Schema({
 });
 
 userSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) {
-    next();
-  }
-  this.password = await bcrypt.hash(this.password, 10);
+  if (!this.isModified("password")) return next(); 
+  this.password = await bcrypt.hash(this.password, 8);
+  next();
 });
 
 userSchema.methods.comparePassword = async function (enteredPassword) {
-  console.log(enteredPassword);
   return await bcrypt.compare(enteredPassword, this.password);
 };
 

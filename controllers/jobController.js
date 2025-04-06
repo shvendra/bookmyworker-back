@@ -92,23 +92,38 @@ export const postJob = catchAsyncErrors(async (req, res, next) => {
 
 export const getMyJobs = catchAsyncErrors(async (req, res, next) => {
   const { role } = req.user;
-  if (role === "Job Seeker") {
+  const { postedBy } = req.query;
+
+  if (role === "Worker") {
     return next(
-      new ErrorHandler("Job Seeker not allowed to access this resource.", 400)
+      new ErrorHandler("Worker not allowed to access this resource.", 400)
     );
   }
-  const myJobs = await User.find({ postedBy: req.user._id });
+
+  let filter = {};
+
+  if (role !== "Admin") {
+    // For non-admins, use user's own ID (override any incoming postedBy)
+    filter.postedBy = req.user._id;
+  } else if (postedBy) {
+    // Admins can filter by postedBy
+    filter.postedBy = postedBy;
+  }
+
+  const myJobs = await User.find(filter);
+
   res.status(200).json({
     success: true,
     myJobs,
   });
 });
 
+
 export const updateJob = catchAsyncErrors(async (req, res, next) => {
   const { role } = req.user;
-  if (role === "Job Seeker") {
+  if (role === "Worker") {
     return next(
-      new ErrorHandler("Job Seeker not allowed to access this resource.", 400)
+      new ErrorHandler("Worker not allowed to access this resource.", 400)
     );
   }
   const { id } = req.params;

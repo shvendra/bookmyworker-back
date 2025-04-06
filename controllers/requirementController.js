@@ -14,8 +14,6 @@ export const insertRequirement = catchAsyncErrors(async (req, res, next) => {
     "workType",
     "workerQuantityUnskilled",
     "workerQuantitySkilled",
-    "workLocation",
-    "workerNeedDate",
     "state",
     "district",
   ];
@@ -43,19 +41,20 @@ export const insertRequirement = catchAsyncErrors(async (req, res, next) => {
 });
 
 export const getFilteredRequirements = catchAsyncErrors(async (req, res, next) => {
-  const { role, _id } = req.user;
+  const { role, _id, district } = req.user;
   const query = {};
 
   // Role-based filtering
   if (role === "Employer") {
     query.employerId = _id;
   } else if (role === "Agent") {
-    query.assignedAgentId = _id;
+    query.district = district;
   }
 
   // Query param filtering
   if (req.query.ERN_NUMBER) query.ERN_NUMBER = req.query.ERN_NUMBER;
   if (req.query.state) query.state = req.query.state;
+  if (req.query.district) query.district = req.query.district;
   if (req.query.status) query.status = req.query.status;
   if (req.query.workType) query.workType = req.query.workType;
 
