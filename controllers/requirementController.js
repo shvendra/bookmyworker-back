@@ -86,7 +86,6 @@ export const assignAgentToRequirement = catchAsyncErrors(async (req, res, next) 
   requirement.status = "Assigned";
   requirement.assignedAgentName = assignedAgentName;
   requirement.assignedAgentPhone = assignedAgentPhone;
-
   await requirement.save();
 
   res.status(200).json({
@@ -123,12 +122,12 @@ export const assignAgentToRequirement = catchAsyncErrors(async (req, res, next) 
 //   });
 // });
 export const expressInterest = catchAsyncErrors(async (req, res, next) => {
-  const { id } = req.params; // Requirement ID
-  const agentId = req.user._id;
-  const { wage } = req.body;
+  const { id } = req.params; // This is a string
+  const agentId = req.user._id; // Also a string or ObjectId
+  const { wage } = req.body; // Add wage to support per-head wage
 
+  // Validate inputs
   if (!mongoose.Types.ObjectId.isValid(id)) {
-    // throw proper error object
     return next(new Error("Invalid requirement ID"));
   }
 
@@ -136,33 +135,39 @@ export const expressInterest = catchAsyncErrors(async (req, res, next) => {
     return next(new Error("Invalid wage input"));
   }
 
+  // Use $addToSet to prevent duplicates
   const requirement = await Requirement.findById(id);
   if (!requirement) {
     return next(new Error("Requirement not found"));
   }
-
-  // Initialize array if not defined
-  if (!Array.isArray(requirement.intrestedAgents)) {
-    requirement.intrestedAgents = [];
-  }
-
-  // Check if agent already exists
-  const alreadyInterested = requirement.intrestedAgents.some(
-    (entry) => entry.agentId.toString() === agentId.toString()
+  const alreadyInterested = requirement?.intrestedAgents.some(
+    (entry) => entry?.agentId?.equals(agentId)
   );
-
-  if (!alreadyInterested) {
-    requirement.intrestedAgents.push({
-      agentId,
-      agentRequiredWage: wage,
-    });
-    await requirement.save();
+if(!alreadyInterested) {
+  const updatedRequirement = await Requirement.findByIdAndUpdate(
+    id,
+    {
+      $addToSet: {
+        intrestedAgents: { agentId, agentRequiredWage: wage },
+      },
+    },
+    { new: true }
+  );
+  if (!updatedRequirement) {
+    return next(new Error("Requirement not found"));
   }
 
-  return res.status(200).json({
+  return res.json({
     success: true,
     message: "Interest submitted successfully",
-    intrestedAgents: requirement.intrestedAgents,
+    data: updatedRequirement.intrestedAgents,
   });
-});
+} else {
+  return res.json({
+    success: false,
+    message: "You have already expressed interest in this requirement",
+  })
+  
 
+ 
+}});

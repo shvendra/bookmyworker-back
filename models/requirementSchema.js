@@ -40,17 +40,10 @@ const requirementSchema = new mongoose.Schema({
   status: { type: String, default: "Pending" }, // Default status
   intrestedAgents: [
     {
-      agentId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
-      },
-      agentRequiredWage: {
-        type: Number,
-        required: true,
-      }
+      agentId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+      agentRequiredWage: { type: Number },
     }
   ],
-  
   assignedAgentName: { type: String },
   assignedAgentPhone: { type: String },
   ERN_NUMBER: { type: Number, unique: true }
