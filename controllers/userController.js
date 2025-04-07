@@ -241,7 +241,7 @@ export const getAgents = async (req, res) => {
 
     const filter = {
       role: "Agent",
-      status: "Active",
+      // status: "Active",
     };
 
     if (state) filter.state = state;

@@ -38,7 +38,19 @@ const requirementSchema = new mongoose.Schema({
   employerPhone: { type: String, required: true },
   assignedAgentId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
   status: { type: String, default: "Pending" }, // Default status
-  intrestedAgents: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+  intrestedAgents: [
+    {
+      agentId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+      agentRequiredWage: {
+        type: Number,
+        required: true,
+      }
+    }
+  ],
+  
   assignedAgentName: { type: String },
   assignedAgentPhone: { type: String },
   ERN_NUMBER: { type: Number, unique: true }

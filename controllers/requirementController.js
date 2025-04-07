@@ -1,6 +1,7 @@
 import { catchAsyncErrors } from "../middlewares/catchAsyncError.js";
 import ErrorHandler from "../middlewares/error.js";
 import {Requirement} from "../models/requirementSchema.js";
+import mongoose from "mongoose";
 
 // Insert Requirement (Only Employer Can Create)
 export const insertRequirement = catchAsyncErrors(async (req, res, next) => {
@@ -77,7 +78,6 @@ export const assignAgentToRequirement = catchAsyncErrors(async (req, res, next) 
   }
 
   const requirement = await Requirement.findOne({ ERN_NUMBER: ern });
-console.log(requirement);
   if (!requirement) {
     return next(new ErrorHandler("Requirement not found with given ERN", 404));
   }
@@ -93,6 +93,76 @@ console.log(requirement);
     success: true,
     message: "Agent assigned successfully",
     requirement,
+  });
+});
+
+// export const expressInterest = catchAsyncErrors(async (req, res, next) => {
+//   const { id } = req.params; // This is a string
+//   const agentId = req.user._id; // Also a string or ObjectId
+
+//   // Optional: validate ID format
+//   if (!mongoose.Types.ObjectId.isValid(id)) {
+//     return res.status(400).json({ success: false, message: "Invalid requirement ID" });
+//   }
+
+//   // Use $addToSet to prevent duplicates — only adds if not already present
+//   const updatedRequirement = await Requirement.findByIdAndUpdate(
+//     id,
+//     { $addToSet: { intrestedAgents: agentId } },
+//     { new: true }
+//   );
+
+//   if (!updatedRequirement) {
+//     return res.status(404).json({ success: false, message: "Requirement not found" });
+//   }
+
+//   return res.json({
+//     success: true,
+//     message: "Interest submitted successfully",
+//     data: updatedRequirement.intrestedAgents,
+//   });
+// });
+export const expressInterest = catchAsyncErrors(async (req, res, next) => {
+  const { id } = req.params; // Requirement ID
+  const agentId = req.user._id;
+  const { wage } = req.body;
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    // throw proper error object
+    return next(new Error("Invalid requirement ID"));
+  }
+
+  if (!wage || isNaN(wage)) {
+    return next(new Error("Invalid wage input"));
+  }
+
+  const requirement = await Requirement.findById(id);
+  if (!requirement) {
+    return next(new Error("Requirement not found"));
+  }
+
+  // Initialize array if not defined
+  if (!Array.isArray(requirement.intrestedAgents)) {
+    requirement.intrestedAgents = [];
+  }
+
+  // Check if agent already exists
+  const alreadyInterested = requirement.intrestedAgents.some(
+    (entry) => entry.agentId.toString() === agentId.toString()
+  );
+
+  if (!alreadyInterested) {
+    requirement.intrestedAgents.push({
+      agentId,
+      agentRequiredWage: wage,
+    });
+    await requirement.save();
+  }
+
+  return res.status(200).json({
+    success: true,
+    message: "Interest submitted successfully",
+    intrestedAgents: requirement.intrestedAgents,
   });
 });
 
