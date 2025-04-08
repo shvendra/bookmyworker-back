@@ -6,6 +6,7 @@ const router = express.Router();
 // Fetch chat history (sorted by timestamp)
 router.get("/:roomId", async (req, res) => {
   try {
+    console.log(req.params.roomId);
     const chat = await Chat.findOne({ roomId: req.params.roomId });
     if (!chat) {
       return res.status(404).json({

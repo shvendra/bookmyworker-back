@@ -77,7 +77,7 @@ console.log(isAdmin);
     }
 
     // Prevent non-admins from fetching all
-    if (!isAdmin || !requirement_id && !agent_id && !employer_id) {
+    if (!isAdmin && (!requirement_id && !agent_id && !employer_id)) {
       return res.status(403).json({
         success: false,
         message: "Access denied. Only Admin/SuperAdmin can fetch all data.",

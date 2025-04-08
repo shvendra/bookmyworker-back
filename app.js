@@ -95,42 +95,50 @@ dbConnection();
 io.on("connection", (socket) => {
   console.log("A user connected:", socket.id);
 
-  socket.on("join_room", (room) => {
-    socket.join(room);
-    console.log(`User ${socket.id} joined room ${room}`);
+  socket.on("join_room", (roomId) => {
+    socket.join(roomId);
+    console.log(`Socket ${socket.id} joined room ${roomId}`);
   });
 
   socket.on("send_message", async (data) => {
-    const { room, message, sender } = data;
+    const { room, message, sender, role } = data;
+    console.log("Received message from frontend:", data);
 
     try {
-      let senderObjectId;
-      try {
-        senderObjectId = new mongoose.Types.ObjectId(sender);
-      } catch {
-        console.error("Invalid sender ID:", sender);
-        return;
-      }
-
       let chat = await Chat.findOne({ roomId: room });
-
       if (!chat) {
         chat = new Chat({ roomId: room, messages: [] });
       }
 
-      chat.messages.push({ sender: senderObjectId, message, timestamp: new Date() });
+      const msgObj = {
+        sender,
+        role,
+        message,
+        timestamp: new Date(),
+        roomId: room, // Add this
+
+      };
+
+      chat.messages.push(msgObj);
       await chat.save();
 
-      io.to(room).emit("receive_message", { message, sender });
-    } catch (error) {
-      console.error("Error saving message to DB:", error);
+      // Emit the message back to all clients in the room
+      io.to(room).emit("receive_message", {
+        sender,
+        role,
+        message,
+        timestamp: new Date(),
+        roomId: room, // Add this
+      });    } catch (error) {
+      console.error("Error saving message:", error);
     }
   });
 
   socket.on("disconnect", () => {
-    console.log("A user disconnected:", socket.id);
+    console.log("User disconnected:", socket.id);
   });
 });
+
 
 // Global Error Middleware
 app.use(errorMiddleware);
