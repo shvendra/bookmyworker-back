@@ -18,6 +18,7 @@ import applicationRouter from "./routes/applicationRoutes.js";
 import chatRouter from "./routes/chatRoutes.js";
 import otpRoute from "./routes/otpRoute.js";
 import adminRouter from "./routes/adminRoute.js";
+import attendanceRoute from "./routes/attendanceRoute.js";
 
 // Middlewares
 import { errorMiddleware } from "./middlewares/error.js";
@@ -76,6 +77,7 @@ app.use("/api/v1/job", jobRouter);
 app.use("/api/v1/application", applicationRouter);
 app.use("/api/v1/chat", chatRouter);
 app.use("/api/v1/otp", otpRoute);
+app.use("/api/v1/attendance", attendanceRoute);
 
 // Health Check Route
 app.get("/api/v1/health", (req, res) => {
