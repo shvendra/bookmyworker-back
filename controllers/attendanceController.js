@@ -73,7 +73,7 @@ console.log(isAdmin);
     // If admin filters by employer/agent or requirement_id, allow
     if (isAdmin && (agent_id || employer_id)) {
       if (agent_id) filter.agent_id = agent_id;
-      if (employer_id) filter.employer_id = employer_id;
+      if (employer_id) filter.employerId = employer_id;
     }
 
     // Prevent non-admins from fetching all
