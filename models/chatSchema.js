@@ -5,7 +5,11 @@ const messageSchema = new mongoose.Schema({
   role: String,
   message: String,
   timestamp: { type: Date, default: Date.now },
-  roomId: String, // Add roomId here for reference
+  roomId: String,
+  readBy: {
+    type: [String], // array of user IDs who have read the message
+    default: [],
+  },
 });
 
 const chatSchema = new mongoose.Schema({

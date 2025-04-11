@@ -70,4 +70,32 @@ router.post("/:roomId", async (req, res) => {
   }
 });
 
+router.get("/unread-counts/:userId", async (req, res) => {
+  const userId = req.params.userId;
+
+  try {
+    // Get all chat documents
+    const chats = await Chat.find({});
+
+    const counts = chats.map(chat => {
+      const unread = chat.messages.filter(
+        (msg) =>
+          msg.sender !== userId &&            // not sent by this user
+          !msg.readBy.includes(userId)        // and not read by this user
+      ).length;
+
+      return {
+        postId: chat.roomId,
+        unread,
+      };
+    });
+
+    res.json({ success: true, counts });
+  } catch (error) {
+    console.error("Error getting unread counts:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+
 export default router;

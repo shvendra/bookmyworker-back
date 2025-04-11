@@ -115,22 +115,51 @@ io.on("connection", (socket) => {
         role,
         message,
         timestamp: new Date(),
-        roomId: room, // Add this
-
+        roomId: room,
+        readBy: [sender], // ✅ Mark as read for sender
       };
 
       chat.messages.push(msgObj);
       await chat.save();
 
-      // Emit the message back to all clients in the room
+      // Emit to room (for real-time message updates)
       io.to(room).emit("receive_message", {
         sender,
         role,
         message,
-        timestamp: new Date(),
-        roomId: room, // Add this
-      });    } catch (error) {
+        timestamp: msgObj.timestamp,
+        roomId: room,
+      });
+
+      // Emit globally for unread update
+      io.sockets.emit("new_message", {
+        sender,
+        postId: room,
+      });
+
+    } catch (error) {
       console.error("Error saving message:", error);
+    }
+  });
+
+  // ✅ NEW: Mark all messages in room as read by user
+  socket.on("mark_messages_read", async ({ roomId, userId }) => {
+    try {
+      const chat = await Chat.findOne({ roomId });
+      if (!chat) return;
+
+      let updated = false;
+
+      chat.messages.forEach((msg) => {
+        if (!msg.readBy.includes(userId)) {
+          msg.readBy.push(userId);
+          updated = true;
+        }
+      });
+
+      if (updated) await chat.save();
+    } catch (err) {
+      console.error("Error marking messages as read:", err);
     }
   });
 
@@ -138,6 +167,7 @@ io.on("connection", (socket) => {
     console.log("User disconnected:", socket.id);
   });
 });
+
 
 
 // Global Error Middleware

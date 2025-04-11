@@ -32,7 +32,7 @@ const requirementSchema = new mongoose.Schema({
   outTime: { type: String },
   remarks: { type: String },
   selectedCategories: { type: [String], default: [] },
-
+  subCategory: { type: String },
   employerId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   employerName: { type: String, required: true },
   employerPhone: { type: String, required: true },
