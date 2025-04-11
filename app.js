@@ -172,6 +172,24 @@ io.on("connection", (socket) => {
 
 // Global Error Middleware
 app.use(errorMiddleware);
+// ✅ Serve frontend from /frontend/dist
+app.use(express.static(path.join(__dirname, '../frontend/dist')));
+
+app.get('*', (req, res) => {
+  if (
+    req.originalUrl.startsWith('/api/') ||
+    req.originalUrl.startsWith('/socket.io/')
+  ) {
+    return res.status(404).json({ message: 'Not Found' });
+  }
+
+  res.sendFile(path.join(__dirname, '../frontend/dist/index.html'));
+});
+
+// Global Error Middleware
+app.use(errorMiddleware);
+
+// Export the server
 
 // Export the server (for use in main.js or app.js)
 export default server;
