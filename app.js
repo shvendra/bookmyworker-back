@@ -176,9 +176,7 @@ app.use(errorMiddleware);
 // Serve static frontend files from dist/
 app.use(express.static(path.join(__dirname, 'dist')));
 
-// API routes (already handled somewhere like app.use('/api/v1/...'))
 
-// Fallback for all non-API routes — serve frontend
 app.get('*', (req, res) => {
   // Avoid intercepting API or socket routes
   if (
