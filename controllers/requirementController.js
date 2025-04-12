@@ -13,7 +13,6 @@ export const insertRequirement = catchAsyncErrors(async (req, res, next) => {
 
   const requiredFields = [
     "workType",
-    "workerQuantityUnskilled",
     "workerQuantitySkilled",
     "state",
     "district",
