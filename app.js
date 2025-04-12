@@ -173,9 +173,14 @@ io.on("connection", (socket) => {
 // Global Error Middleware
 app.use(errorMiddleware);
 // ✅ Serve frontend from /frontend/dist
-app.use(express.static(path.join(__dirname, '../bookmyworker-back/dist')));
+// Serve static frontend files from dist/
+app.use(express.static(path.join(__dirname, 'dist')));
 
+// API routes (already handled somewhere like app.use('/api/v1/...'))
+
+// Fallback for all non-API routes — serve frontend
 app.get('*', (req, res) => {
+  // Avoid intercepting API or socket routes
   if (
     req.originalUrl.startsWith('/api/') ||
     req.originalUrl.startsWith('/socket.io/')
@@ -183,7 +188,7 @@ app.get('*', (req, res) => {
     return res.status(404).json({ message: 'Not Found' });
   }
 
-  res.sendFile(path.join(__dirname, '../bookmyworker-back/dist/index.html'));
+  res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
 
 // Global Error Middleware
