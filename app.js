@@ -173,7 +173,7 @@ io.on("connection", (socket) => {
 // Global Error Middleware
 app.use(errorMiddleware);
 // ✅ Serve frontend from /frontend/dist
-app.use(express.static(path.join(__dirname, '../frontend/dist')));
+app.use(express.static(path.join(__dirname, '../bookmyworker-back/dist')));
 
 app.get('*', (req, res) => {
   if (
@@ -183,7 +183,7 @@ app.get('*', (req, res) => {
     return res.status(404).json({ message: 'Not Found' });
   }
 
-  res.sendFile(path.join(__dirname, '../frontend/dist/index.html'));
+  res.sendFile(path.join(__dirname, '../bookmyworker-back/dist/index.html'));
 });
 
 // Global Error Middleware
