@@ -59,7 +59,6 @@ export const getAttendanceByFilter = async (req, res) => {
     if (requirement_id) {
       filter.requirement_id = requirement_id;
     }
-console.log(isAdmin);
     // Employer role can only view their own data
     if (user.role === "Employer") {
       filter.employer_id = user._id;
@@ -84,7 +83,9 @@ console.log(isAdmin);
       });
     }
 
-    const result = await WorkerAttendance.find(filter).lean();
+    const result = await WorkerAttendance.find(filter)
+    .sort({ createdAt: -1 }) // 👈 Descending order by creation time
+    .lean();
     res.json({ success: true, data: result });
   } catch (error) {
     console.error("Error fetching attendance by filter:", error);

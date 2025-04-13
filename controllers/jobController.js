@@ -134,7 +134,7 @@ export const getMyJobs = catchAsyncErrors(async (req, res, next) => {
     filter.postedBy = postedBy;
   }
 
-  const myJobs = await User.find(filter);
+  const myJobs = await User.find(filter).sort({ createdAt: -1 });
 
   res.status(200).json({
     success: true,

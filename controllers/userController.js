@@ -247,8 +247,10 @@ export const getAgents = async (req, res) => {
     if (state) filter.state = state;
     if (city) filter.district = city;
 
-    const agents = await User.find(filter).select("_id name district phone profilePhoto");
-
+    const agents = await User.find(filter)
+    .select("_id name district phone profilePhoto")
+    .sort({ createdAt: -1 });
+  
     res.status(200).json({
       success: true,
       agents,

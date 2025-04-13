@@ -58,7 +58,7 @@ export const getFilteredRequirements = catchAsyncErrors(async (req, res, next) =
   if (req.query.status) query.status = req.query.status;
   if (req.query.workType) query.workType = req.query.workType;
 
-  const requirements = await Requirement.find(query);
+  const requirements = await Requirement.find(query).sort({ createdAt: -1 });
 
   res.status(200).json({
     success: true,

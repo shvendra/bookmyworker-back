@@ -44,6 +44,7 @@ const requirementSchema = new mongoose.Schema({
       agentRequiredWage: { type: Number },
     }
   ],
+  isAgentAccepted: {type: Boolean, required: false},
   assignedAgentName: { type: String },
   assignedAgentPhone: { type: String },
   ERN_NUMBER: { type: Number, unique: true }
