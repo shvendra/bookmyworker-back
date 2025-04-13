@@ -49,6 +49,8 @@ export const postJob = catchAsyncErrors(async (req, res, next) => {
       pinCode,
       address,
       role,
+      district,
+      state,
       password
     } = req.body;
 
@@ -91,6 +93,8 @@ export const postJob = catchAsyncErrors(async (req, res, next) => {
       address,
       postedBy: req.user._id,
       role,
+      district,
+      state,
       password,
       profile: profileImage, // Save the image path in the database
     });
