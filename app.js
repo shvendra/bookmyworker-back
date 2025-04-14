@@ -5,7 +5,6 @@ import { config } from "dotenv";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import fileUpload from "express-fileupload";
-import mongoose from "mongoose";
 import path from "path";
 import { fileURLToPath } from "url";
 import session from "express-session";
@@ -33,6 +32,7 @@ const __dirname = path.dirname(__filename);
 // Initialize App
 const app = express();
 config({ path: "./config/config.env" });
+
 
 // Create HTTP server & Socket.IO server
 const server = http.createServer(app);
@@ -64,7 +64,7 @@ app.use(session({
   secret: 'your-secret-key',
   resave: false,
   saveUninitialized: true,
-  cookie: { secure: false } // Use true only if HTTPS
+  cookie: { secure: false }
 }));
 // Static File Serving for KYC and Profile Photos
 app.use("/kyc_doc", express.static(path.join(__dirname, "kyc_doc")));
@@ -88,10 +88,8 @@ app.get("/api/v1/health", (req, res) => {
   });
 });
 
-// Connect to MongoDB
 dbConnection();
 
-// WebSocket: Chat logic with Socket.IO
 io.on("connection", (socket) => {
   console.log("A user connected:", socket.id);
 
@@ -168,12 +166,8 @@ io.on("connection", (socket) => {
   });
 });
 
-//...
 
-// Global Error Middleware
 app.use(errorMiddleware);
-// ✅ Serve frontend from /frontend/dist
-// Serve static frontend files from dist/
 app.use(express.static(path.join(__dirname, 'dist')));
 
 
@@ -189,10 +183,5 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
 
-// Global Error Middleware
 app.use(errorMiddleware);
-
-// Export the server
-
-// Export the server (for use in main.js or app.js)
-export default server;
+export default app;
