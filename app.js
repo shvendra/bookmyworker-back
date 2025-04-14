@@ -38,8 +38,8 @@ config({ path: "./config/config.env" });
 const server = http.createServer(app);
 const io = new SocketIOServer(server, {
   cors: {
-    origin: process.env.FRONTEND_URL,
-    methods: ["GET", "POST", "PUT", "DELETE"],
+    origin: ["https://bookmyworkers.com", "https://www.bookmyworkers.com"],
+    methods: ["GET", "POST"],
     credentials: true,
   },
 });
@@ -47,12 +47,13 @@ const io = new SocketIOServer(server, {
 // CORS Middleware
 app.use(
   cors({
-    origin: [process.env.FRONTEND_URL],
+    origin: ["https://bookmyworkers.com", "https://www.bookmyworkers.com"],
     methods: ["GET", "POST", "DELETE", "PUT", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"], // <== Add this
+    allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
   })
 );
+
 
 
 // Core Middleware
