@@ -5,6 +5,7 @@ import { config } from "dotenv";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import fileUpload from "express-fileupload";
+import mongoose from "mongoose";
 import path from "path";
 import { fileURLToPath } from "url";
 import session from "express-session";
@@ -32,7 +33,6 @@ const __dirname = path.dirname(__filename);
 // Initialize App
 const app = express();
 config({ path: "./config/config.env" });
-
 
 // Create HTTP server & Socket.IO server
 const server = http.createServer(app);
@@ -64,7 +64,7 @@ app.use(session({
   secret: 'your-secret-key',
   resave: false,
   saveUninitialized: true,
-  cookie: { secure: false }
+  cookie: { secure: false } 
 }));
 // Static File Serving for KYC and Profile Photos
 app.use("/kyc_doc", express.static(path.join(__dirname, "kyc_doc")));
@@ -184,4 +184,4 @@ app.get('*', (req, res) => {
 });
 
 app.use(errorMiddleware);
-export default app;
+export default server;
