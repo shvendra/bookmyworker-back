@@ -48,10 +48,12 @@ const io = new SocketIOServer(server, {
 app.use(
   cors({
     origin: [process.env.FRONTEND_URL],
-    methods: ["GET", "POST", "DELETE", "PUT"],
+    methods: ["GET", "POST", "DELETE", "PUT", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"], // <== Add this
     credentials: true,
   })
 );
+
 
 // Core Middleware
 app.use(cookieParser());
