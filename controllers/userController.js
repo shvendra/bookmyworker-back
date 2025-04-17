@@ -22,6 +22,7 @@ export const register = catchAsyncErrors(async (req, res, next) => {
     role,
     state,
     district,
+    block,
   } = req.body;
 
   // Ensure required fields are present
@@ -53,6 +54,7 @@ export const register = catchAsyncErrors(async (req, res, next) => {
     employerType,
     state,
     district,
+    block,
   };
 
   // Include email only if Employer

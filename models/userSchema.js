@@ -102,6 +102,9 @@ const userSchema = new mongoose.Schema({
   district: {
     type: String,
   },
+  block: {
+    type: String,
+  },
   profile: {
     type: String,
   }
