@@ -17,7 +17,6 @@ async function generateUniqueERN() {
 // Define Schema
 const requirementSchema = new mongoose.Schema({
   workType: { type: String, required: true }, // ✅ Required
-  workerQuantityUnskilled: { type: Number, required: true }, // ✅ Required
   workerQuantitySkilled: { type: Number, required: true }, // ✅ Required
   workLocation: { type: String }, // ✅ Required
   workerNeedDate: { type: Date }, // ✅ Required
